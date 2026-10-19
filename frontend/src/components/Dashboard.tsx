@@ -8,7 +8,13 @@ import {
   AlertCircle, 
   Clock, 
   ArrowRight,
-  Layers
+  Search,
+  MessageSquare,
+  Network,
+  Wand2,
+  FolderTree,
+  ExternalLink,
+  Code2
 } from 'lucide-react';
 
 interface Repository {
@@ -26,6 +32,8 @@ export default function Dashboard() {
   const [repos, setRepos] = useState<Repository[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [filterQuery, setFilterQuery] = useState('');
+  const [addingTemplate, setAddingTemplate] = useState<string | null>(null);
 
   const fetchRepos = async () => {
     try {
@@ -50,7 +58,7 @@ export default function Dashboard() {
   const handleDelete = async (e: React.MouseEvent, id: number) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!confirm('Are you sure you want to delete this repository and its vectors?')) return;
+    if (!confirm('Are you sure you want to delete this repository and all its vector indices?')) return;
 
     setDeletingId(id);
     try {
@@ -67,7 +75,8 @@ export default function Dashboard() {
     }
   };
 
-  const quickAdd = async (url: string) => {
+  const quickAdd = async (url: string, name: string) => {
+    setAddingTemplate(name);
     try {
       const res = await fetch('http://localhost:8000/repositories', {
         method: 'POST',
@@ -79,6 +88,8 @@ export default function Dashboard() {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setAddingTemplate(null);
     }
   };
 
@@ -108,166 +119,261 @@ export default function Dashboard() {
     }
   };
 
+  const filteredRepos = repos.filter(r => 
+    r.name.toLowerCase().includes(filterQuery.toLowerCase()) ||
+    r.owner.toLowerCase().includes(filterQuery.toLowerCase()) ||
+    r.status.toLowerCase().includes(filterQuery.toLowerCase())
+  );
+
   return (
     <div className="space-y-8">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-900/40 via-indigo-900/20 to-slate-900 border border-blue-500/20 p-8 shadow-2xl">
-        <div className="relative z-10 max-w-2xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-950/70 via-indigo-950/40 to-slate-900 border border-blue-500/20 p-8 shadow-2xl">
+        <div className="relative z-10 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20 mb-3">
             <Sparkles size={14} className="text-blue-400" />
-            Semantic AST Codebase Intelligence
+            Semantic AST Codebase Intelligence & Pair Programmer
           </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl">
-            Explore codebases with AI intelligence.
+            Explore and build across codebases with deep AI intelligence.
           </h1>
           <p className="mt-3 text-slate-300 text-sm leading-relaxed">
-            DevIntel indexes GitHub repositories with Tree-sitter AST parsing, generates high-dimensional embeddings, and answers architectural questions with exact source code references.
+            DevIntel indexes GitHub repositories with 25+ Tree-sitter AST grammars, builds semantic vector indexes with Qdrant and Gemini embeddings, maps dependency architecture graphs, and writes grounded code.
           </p>
         </div>
 
         {/* Quick Stats Grid */}
         <div className="mt-6 pt-6 border-t border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-            <div className="text-xs text-slate-400">Indexed Repos</div>
-            <div className="text-2xl font-bold text-white mt-1">{repos.filter(r => r.status === 'COMPLETED').length}</div>
+          <div className="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800 backdrop-blur-sm">
+            <div className="text-xs text-slate-400 font-medium">Indexed Repos</div>
+            <div className="text-2xl font-bold text-white mt-1">
+              {repos.filter(r => r.status === 'COMPLETED').length} <span className="text-xs text-slate-500 font-normal">ready</span>
+            </div>
           </div>
-          <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-            <div className="text-xs text-slate-400">Vector Engine</div>
+          <div className="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800 backdrop-blur-sm">
+            <div className="text-xs text-slate-400 font-medium">Vector Engine</div>
             <div className="text-2xl font-bold text-blue-400 mt-1">Qdrant</div>
           </div>
-          <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-            <div className="text-xs text-slate-400">AI Model</div>
-            <div className="text-2xl font-bold text-indigo-400 mt-1">Gemini</div>
+          <div className="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800 backdrop-blur-sm">
+            <div className="text-xs text-slate-400 font-medium">Supported Languages</div>
+            <div className="text-2xl font-bold text-indigo-400 mt-1">25+ Languages</div>
           </div>
-          <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-            <div className="text-xs text-slate-400">Supported ASTs</div>
-            <div className="text-2xl font-bold text-emerald-400 mt-1">Py, JS, TS, Java</div>
+          <div className="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800 backdrop-blur-sm">
+            <div className="text-xs text-slate-400 font-medium">AI Pair Engine</div>
+            <div className="text-2xl font-bold text-emerald-400 mt-1">Gemini Flash RAG</div>
           </div>
+        </div>
+      </div>
+
+      {/* 1-Click Starter Repositories Section */}
+      <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+              <Code2 size={16} className="text-blue-400" />
+              1-Click Multi-Language Starters
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Instantly index popular open-source repositories to test DevIntel across languages.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <button
+            onClick={() => quickAdd('https://github.com/gothinkster/node-express-realworld-example-app', 'Express')}
+            disabled={addingTemplate !== null}
+            className="flex flex-col p-3 rounded-lg bg-slate-900/80 hover:bg-slate-800/80 border border-slate-800 hover:border-blue-500/40 text-left transition group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-white group-hover:text-blue-400 transition">TypeScript & Node</span>
+              <span className="px-1.5 py-0.5 text-[10px] bg-blue-500/10 text-blue-400 rounded">Fullstack</span>
+            </div>
+            <div className="text-[11px] text-slate-400 mt-1 font-mono truncate">RealWorld Express API</div>
+          </button>
+
+          <button
+            onClick={() => quickAdd('https://github.com/bottlepy/bottle', 'Bottle')}
+            disabled={addingTemplate !== null}
+            className="flex flex-col p-3 rounded-lg bg-slate-900/80 hover:bg-slate-800/80 border border-slate-800 hover:border-indigo-500/40 text-left transition group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-white group-hover:text-indigo-400 transition">Python Web</span>
+              <span className="px-1.5 py-0.5 text-[10px] bg-indigo-500/10 text-indigo-400 rounded">Micro-framework</span>
+            </div>
+            <div className="text-[11px] text-slate-400 mt-1 font-mono truncate">bottlepy/bottle</div>
+          </button>
+
+          <button
+            onClick={() => quickAdd('https://github.com/fatih/color', 'ColorGo')}
+            disabled={addingTemplate !== null}
+            className="flex flex-col p-3 rounded-lg bg-slate-900/80 hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-500/40 text-left transition group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-white group-hover:text-cyan-400 transition">Golang Package</span>
+              <span className="px-1.5 py-0.5 text-[10px] bg-cyan-500/10 text-cyan-400 rounded">Go AST</span>
+            </div>
+            <div className="text-[11px] text-slate-400 mt-1 font-mono truncate">fatih/color</div>
+          </button>
+
+          <button
+            onClick={() => quickAdd('https://github.com/octocat/Spoon-Knife', 'SpoonKnife')}
+            disabled={addingTemplate !== null}
+            className="flex flex-col p-3 rounded-lg bg-slate-900/80 hover:bg-slate-800/80 border border-slate-800 hover:border-emerald-500/40 text-left transition group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-white group-hover:text-emerald-400 transition">HTML & Git</span>
+              <span className="px-1.5 py-0.5 text-[10px] bg-emerald-500/10 text-emerald-400 rounded">Minimal</span>
+            </div>
+            <div className="text-[11px] text-slate-400 mt-1 font-mono truncate">octocat/Spoon-Knife</div>
+          </button>
         </div>
       </div>
 
       {/* Main Content Area */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white">Your Repositories</h2>
-            <p className="text-sm text-slate-400">Select any repository to open its workspace and query code.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold text-white tracking-tight">Your Repositories</h2>
+            <span className="px-2 py-0.5 text-xs rounded-full bg-slate-800 text-slate-400 font-mono">
+              {repos.length}
+            </span>
           </div>
-          <Link
-            to="/add"
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition shadow-lg shadow-blue-600/20"
-          >
-            Add Repository
-          </Link>
+
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Filter repositories..."
+                value={filterQuery}
+                onChange={e => setFilterQuery(e.target.value)}
+                className="pl-9 pr-3 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 w-52 sm:w-64"
+              />
+            </div>
+            <Link
+              to="/add"
+              className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition whitespace-nowrap"
+            >
+              + Index Repository
+            </Link>
+          </div>
         </div>
 
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[1, 2].map(i => (
-              <div key={i} className="h-32 rounded-xl bg-slate-900/60 border border-slate-800 animate-pulse p-6" />
-            ))}
+          <div className="flex flex-col items-center justify-center p-12 border border-slate-800 rounded-xl bg-slate-900/30">
+            <Clock className="w-8 h-8 text-blue-400 animate-spin mb-3" />
+            <p className="text-sm text-slate-400 font-medium">Loading repositories...</p>
           </div>
-        ) : repos.length === 0 ? (
-          <div className="text-center py-16 px-4 bg-slate-900/40 rounded-2xl border border-dashed border-slate-800">
-            <Layers className="mx-auto h-12 w-12 text-slate-600 mb-3" />
-            <h3 className="text-base font-semibold text-white">No repositories indexed yet</h3>
-            <p className="mt-1 text-sm text-slate-400">Get started by entering a public GitHub URL or picking a template below.</p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <button
-                onClick={() => quickAdd('https://github.com/bottlepy/bottle')}
-                className="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-              >
-                + Index Bottle (Python)
-              </button>
-              <button
-                onClick={() => quickAdd('https://github.com/gothinkster/node-express-realworld-example-app')}
-                className="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-              >
-                + Index RealWorld App (Node/Express)
-              </button>
+        ) : filteredRepos.length === 0 ? (
+          <div className="p-12 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/20">
+            <div className="w-12 h-12 rounded-xl bg-slate-800/80 flex items-center justify-center mx-auto text-slate-400 mb-4">
+              <FolderTree size={24} />
             </div>
+            <h3 className="text-base font-semibold text-white">No repositories found</h3>
+            <p className="mt-1 text-xs text-slate-400 max-w-sm mx-auto">
+              {filterQuery ? "No repositories match your filter query." : "Index a public GitHub repository or click one of the starter templates above to begin."}
+            </p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {repos.map(repo => (
-              <Link
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredRepos.map(repo => (
+              <div
                 key={repo.id}
-                to={`/repo/${repo.id}`}
-                className="group relative bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-5 transition flex flex-col justify-between shadow-lg shadow-black/20"
+                className="flex flex-col justify-between p-5 rounded-xl border border-slate-800 bg-slate-900/50 hover:bg-slate-900 hover:border-slate-700 transition duration-200 shadow-sm group"
               >
                 <div>
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="text-xs text-slate-400 font-mono tracking-wide">{repo.owner}</div>
-                      <h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition truncate mt-0.5">
-                        {repo.name}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/repo/${repo.id}`}
+                          className="font-bold text-white text-base hover:text-blue-400 transition truncate group-hover:underline"
+                        >
+                          {repo.name}
+                        </Link>
+                        <a
+                          href={repo.github_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-slate-500 hover:text-slate-300"
+                        >
+                          <ExternalLink size={13} />
+                        </a>
+                      </div>
+                      <div className="text-xs text-slate-400 mt-0.5">by {repo.owner}</div>
                     </div>
                     {getStatusBadge(repo.status)}
                   </div>
 
-                  <p className="text-xs text-slate-400 truncate mt-2 font-mono flex items-center gap-1.5">
-                    <GitBranch size={13} className="text-slate-500" />
-                    <span>{repo.branch || 'main'}</span>
-                    <span className="text-slate-600">•</span>
-                    <span className="truncate">{repo.github_url}</span>
-                  </p>
+                  <div className="flex items-center gap-4 mt-4 text-xs text-slate-400">
+                    <div className="flex items-center gap-1.5">
+                      <GitBranch size={13} className="text-slate-500" />
+                      <span>{repo.branch || 'main'}</span>
+                    </div>
+                    <div>
+                      <span>Added {new Date(repo.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
 
                   {repo.error_message && (
-                    <div className="mt-3 text-xs bg-rose-500/10 text-rose-300 border border-rose-500/20 p-2.5 rounded-lg line-clamp-2">
+                    <div className="mt-3 p-2 rounded bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400">
                       {repo.error_message}
                     </div>
                   )}
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                  <div className="flex items-center gap-2 group-hover:text-blue-400 transition font-medium">
-                    <span>Open Workspace</span>
-                    <ArrowRight size={14} className="group-hover:translate-x-1 transition" />
-                  </div>
+                <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                  {/* Action Shortcuts */}
+                  {repo.status === 'COMPLETED' ? (
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to={`/repo/${repo.id}`}
+                        className="px-2.5 py-1 text-xs font-medium rounded-md bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 flex items-center gap-1 transition"
+                      >
+                        <MessageSquare size={12} />
+                        <span>Chat</span>
+                      </Link>
+                      <Link
+                        to={`/repo/${repo.id}?tab=graph`}
+                        className="px-2.5 py-1 text-xs font-medium rounded-md bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/20 flex items-center gap-1 transition"
+                      >
+                        <Network size={12} />
+                        <span>Graph</span>
+                      </Link>
+                      <Link
+                        to={`/repo/${repo.id}?tab=generate`}
+                        className="px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 transition"
+                      >
+                        <Wand2 size={12} />
+                        <span>Studio</span>
+                      </Link>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-slate-500 italic">Processing pipeline...</span>
+                  )}
 
-                  <button
-                    onClick={(e) => handleDelete(e, repo.id)}
-                    disabled={deletingId === repo.id}
-                    className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition"
-                    title="Delete repository"
-                  >
-                    <Trash2 size={15} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => handleDelete(e, repo.id)}
+                      disabled={deletingId === repo.id}
+                      className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-md transition"
+                      title="Delete Repository"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                    <Link
+                      to={`/repo/${repo.id}`}
+                      className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition flex items-center"
+                    >
+                      <ArrowRight size={15} />
+                    </Link>
+                  </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
-      </div>
-
-      {/* Suggested Repositories Section */}
-      <div className="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5">
-        <h3 className="text-sm font-semibold text-slate-300 mb-2">Quick Index Starters</h3>
-        <p className="text-xs text-slate-400 mb-4">Click to automatically add and index verified open-source codebases:</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <button
-            onClick={() => quickAdd('https://github.com/bottlepy/bottle')}
-            className="text-left p-3.5 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 hover:border-blue-500/40 transition group"
-          >
-            <div className="font-semibold text-sm text-slate-200 group-hover:text-blue-400">bottlepy / bottle</div>
-            <div className="text-xs text-slate-400 mt-1">Lightweight Python web framework (~1,000 lines)</div>
-          </button>
-          <button
-            onClick={() => quickAdd('https://github.com/gothinkster/node-express-realworld-example-app')}
-            className="text-left p-3.5 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 hover:border-blue-500/40 transition group"
-          >
-            <div className="font-semibold text-sm text-slate-200 group-hover:text-blue-400">node-express-realworld</div>
-            <div className="text-xs text-slate-400 mt-1">Complete Medium clone with auth, CRUD, and models</div>
-          </button>
-          <button
-            onClick={() => quickAdd('https://github.com/octocat/Spoon-Knife')}
-            className="text-left p-3.5 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 hover:border-blue-500/40 transition group"
-          >
-            <div className="font-semibold text-sm text-slate-200 group-hover:text-blue-400">octocat / Spoon-Knife</div>
-            <div className="text-xs text-slate-400 mt-1">HTML/CSS sample project for instant testing</div>
-          </button>
-        </div>
       </div>
     </div>
   );
