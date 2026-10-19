@@ -28,6 +28,10 @@ async def startup_event():
     logger.info("Database tables verified.")
     init_qdrant()
 
+@app.get("/")
+def root():
+    return {"message": "DevIntel API is running", "status": "ok"}
+
 @app.get("/health")
 def health_check():
     return {"status": "ok"}

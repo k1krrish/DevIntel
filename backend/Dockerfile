@@ -20,10 +20,9 @@ COPY . .
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
 
-# Expose port
-EXPOSE 8000
+# Expose Render standard port
+EXPOSE 10000
 
-# Start FastAPI application with dynamic PORT support
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Start FastAPI application with dynamic PORT support (defaulting to 10000 for Render)
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
