@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard';
 import AddRepository from './components/AddRepository';
 import Workspace from './components/Workspace';
 import { Terminal, Plus, Github, Layers } from 'lucide-react';
+import { API_BASE_URL } from './config';
 
 function Navbar() {
   const location = useLocation();
@@ -12,7 +13,7 @@ function Navbar() {
   useEffect(() => {
     const checkEngine = async () => {
       try {
-        const res = await fetch('http://localhost:8000/repositories', { method: 'GET' });
+        const res = await fetch(`${API_BASE_URL}/repositories`, { method: 'GET' });
         setEngineOnline(res.ok);
       } catch {
         setEngineOnline(false);

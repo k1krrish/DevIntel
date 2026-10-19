@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Github, ArrowLeft, Sparkles, Check, AlertCircle } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function AddRepository() {
   const [url, setUrl] = useState('');
@@ -14,7 +15,7 @@ export default function AddRepository() {
     setError('');
 
     try {
-      const res = await fetch('http://localhost:8000/repositories', {
+      const res = await fetch(`${API_BASE_URL}/repositories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ github_url: url })

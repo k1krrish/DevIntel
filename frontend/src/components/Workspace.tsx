@@ -29,6 +29,7 @@ import {
   RefreshCw,
   Zap
 } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 interface Source {
   file: string;
@@ -141,7 +142,7 @@ export default function Workspace() {
 
   const fetchRepo = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/repositories/${id}`);
+      const res = await fetch(`${API_BASE_URL}/repositories/${id}`);
       if (res.ok) {
         const data = await res.json();
         setRepo(data);
@@ -153,7 +154,7 @@ export default function Workspace() {
 
   const fetchFiles = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/repositories/${id}/files`);
+      const res = await fetch(`${API_BASE_URL}/repositories/${id}/files`);
       if (res.ok) {
         const data = await res.json();
         setFiles(data);
@@ -165,7 +166,7 @@ export default function Workspace() {
 
   const fetchOverview = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/repositories/${id}/overview`);
+      const res = await fetch(`${API_BASE_URL}/repositories/${id}/overview`);
       if (res.ok) {
         const data = await res.json();
         setOverview(data);
@@ -178,7 +179,7 @@ export default function Workspace() {
   const fetchGraph = async () => {
     setGraphLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/repositories/${id}/graph`);
+      const res = await fetch(`${API_BASE_URL}/repositories/${id}/graph`);
       if (res.ok) {
         const data = await res.json();
         setGraphData(data);
@@ -192,7 +193,7 @@ export default function Workspace() {
 
   const fetchGitInsights = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/repositories/${id}/git-insights`);
+      const res = await fetch(`${API_BASE_URL}/repositories/${id}/git-insights`);
       if (res.ok) {
         const data = await res.json();
         setGitInsights(data);
@@ -237,7 +238,7 @@ export default function Workspace() {
     setChatLoading(true);
     
     try {
-      const res = await fetch(`http://localhost:8000/repositories/${id}/chat`, {
+      const res = await fetch(`${API_BASE_URL}/repositories/${id}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: textToSend })
@@ -262,7 +263,7 @@ export default function Workspace() {
     
     setSearchLoading(true);
     try {
-      let url = `http://localhost:8000/repositories/${id}/search?q=${encodeURIComponent(query)}`;
+      let url = `${API_BASE_URL}/repositories/${id}/search?q=${encodeURIComponent(query)}`;
       if (searchFilterLang !== 'all') {
         url += `&language=${encodeURIComponent(searchFilterLang)}`;
       }
@@ -285,7 +286,7 @@ export default function Workspace() {
     setGenLoading(true);
     setGenResult(null);
     try {
-      const res = await fetch(`http://localhost:8000/repositories/${id}/generate`, {
+      const res = await fetch(`${API_BASE_URL}/repositories/${id}/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -311,7 +312,7 @@ export default function Workspace() {
   const openCodeViewer = async (filePath: string, startLine?: number, endLine?: number) => {
     setFileExplanation(null);
     try {
-      const res = await fetch(`http://localhost:8000/repositories/${id}/file-content?path=${encodeURIComponent(filePath)}`);
+      const res = await fetch(`${API_BASE_URL}/repositories/${id}/file-content?path=${encodeURIComponent(filePath)}`);
       if (res.ok) {
         const data = await res.json();
         setViewerFile({
@@ -333,7 +334,7 @@ export default function Workspace() {
     if (!viewerFile) return;
     setExplaining(true);
     try {
-      const res = await fetch(`http://localhost:8000/repositories/${id}/explain`, {
+      const res = await fetch(`${API_BASE_URL}/repositories/${id}/explain`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -356,7 +357,7 @@ export default function Workspace() {
     setAuditLoading(true);
     setAuditReport(null);
     try {
-      const res = await fetch(`http://localhost:8000/repositories/${id}/audit`, {
+      const res = await fetch(`${API_BASE_URL}/repositories/${id}/audit`, {
         method: 'POST'
       });
       if (res.ok) {

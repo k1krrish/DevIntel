@@ -22,3 +22,5 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
+os.makedirs(settings.REPOS_DIR, exist_ok=True)
+os.makedirs(settings.QDRANT_LOCAL_DIR, exist_ok=True)

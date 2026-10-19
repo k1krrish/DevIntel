@@ -16,6 +16,7 @@ import {
   ExternalLink,
   Code2
 } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 interface Repository {
   id: number;
@@ -37,7 +38,7 @@ export default function Dashboard() {
 
   const fetchRepos = async () => {
     try {
-      const res = await fetch('http://localhost:8000/repositories');
+      const res = await fetch(`${API_BASE_URL}/repositories`);
       if (res.ok) {
         const data = await res.json();
         setRepos(data);
@@ -62,7 +63,7 @@ export default function Dashboard() {
 
     setDeletingId(id);
     try {
-      const res = await fetch(`http://localhost:8000/repositories/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/repositories/${id}`, {
         method: 'DELETE',
       });
       if (res.ok) {
@@ -78,7 +79,7 @@ export default function Dashboard() {
   const quickAdd = async (url: string, name: string) => {
     setAddingTemplate(name);
     try {
-      const res = await fetch('http://localhost:8000/repositories', {
+      const res = await fetch(`${API_BASE_URL}/repositories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ github_url: url })
