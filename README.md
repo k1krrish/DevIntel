@@ -1,77 +1,118 @@
-# DevIntel V1
+# DevIntel V1 ⚡
 
 DevIntel is an AI-powered GitHub code intelligence and codebase Q&A platform.
-It clones a public GitHub repository, indexes the source code using `tree-sitter` and Gemini embeddings into Qdrant, and allows you to semantically search and ask questions about the codebase using Gemini as the LLM.
+It clones public GitHub repositories, analyzes the code using **Tree-sitter AST parsing**, generates 3072-dimensional vector embeddings with Google Gemini, stores them in **Qdrant**, and answers questions with grounded source code references.
 
-## Architecture
-Frontend (React + Vite + Tailwind)
-   ↓
-FastAPI (Backend)
-   ↓
-Services (Indexing, Parsing)
-   ↓
-AI Engine (Retrieval, Reranking, LLM)
-   ↓
-Qdrant + PostgreSQL (SQLite fallback)
-   ↓
-Gemini
+---
 
-## AI Pipeline
-GitHub
- ↓
-Tree-sitter
- ↓
-Code Chunks
- ↓
-Embeddings
- ↓
-Qdrant
- ↓
-Retrieval
- ↓
-Reranking
- ↓
-Gemini
+## 🏗️ Architecture
 
-## Setup
-### Requirements
-- Node.js (for frontend)
-- Python 3.11+ (for backend)
+```text
+User / Browser
+      ↓
+Vite + React + Tailwind Frontend (Port 5173)
+      ↓
+FastAPI Backend (Port 8000)
+      ↓
+Indexing Pipeline
+  ├── Git Clone (data/repos)
+  ├── File Discovery & Configurable Ignore Filter
+  ├── Tree-sitter AST Structural Parser (Python, JS, TS, Java)
+  ├── Gemini Embeddings (`gemini-embedding-001`, 3072-dim)
+  └── Qdrant Vector DB (devintel_code collection)
+      ↓
+Query & Q&A Pipeline
+  ├── Qdrant Vector Retrieval (Cosine Similarity)
+  ├── Keyword & Path Boost Reranker
+  ├── Prompt Injection Defense & Context Formulation
+  └── Grounded Gemini LLM (`gemini-flash-lite-latest`)
+      ↓
+Grounded Answer + Exact Source Citations (Files & Lines)
+```
 
-### Environment Variables
-Edit the `.env` file in the root directory:
+---
+
+## 🚀 Key Features
+
+* **Grounded Codebase Q&A**: Ask architectural, algorithmic, or functional questions about any indexed repository.
+* **Semantic Code Search**: Search concepts like *"jwt token verification"* or *"database connection"* to find exact functions even without exact keyword matches.
+* **Tree-sitter AST Parsing**: Instead of arbitrary character slicing, DevIntel understands functions, classes, and methods as semantic units.
+* **Interactive Code Citations**: Clickable source pills show file paths, symbols, and start/end line numbers.
+* **File Explorer**: Browse the repository's indexed file tree directly from the workspace.
+* **Injection Defenses**: Hardened system prompts prevent prompt injection from untrusted repository code.
+* **1-Click Quick Indexing**: Quick template buttons for open-source repositories (Bottle, RealWorld Express, Axios, Spoon-Knife).
+* **Repository Deletion**: Cleanly wipes repository records, cloned files, and vector embeddings in one click.
+
+---
+
+## 🛠️ Tech Stack
+
+* **Backend**: FastAPI, SQLAlchemy (Async), SQLite / PostgreSQL, GitPython, Tree-sitter
+* **Vector DB**: Qdrant (Local disk or Docker)
+* **AI Engine**: Google GenAI SDK (`gemini-embedding-001` & `gemini-flash-lite-latest`)
+* **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons, React Markdown
+
+---
+
+## ⚙️ Setup & Installation
+
+### 1. Requirements
+* Python 3.11+
+* Node.js 18+
+* Google Gemini API Key
+
+### 2. Environment Configuration
+Create a `.env` file in the root directory:
 ```env
-# Optional: Use docker-compose postgres if desired, defaults to SQLite
+GEMINI_API_KEY="your-gemini-api-key"
+# Optional (defaults to local disk storage & SQLite if omitted):
 # DATABASE_URL=postgresql+asyncpg://devintel:devintel_password@localhost:5432/devintel
 # QDRANT_URL=http://localhost:6333
-QDRANT_API_KEY=
-GEMINI_API_KEY=your_gemini_api_key
 ```
 
-### Running
-
-#### 1. Backend
+### 3. Backend Setup
 ```bash
 cd backend
-python -m venv venv
-# On Windows: venv\Scripts\activate
-# On Mac/Linux: source venv/bin/activate
+python -m venv ../venv
+# Activate virtualenv (Windows: ..\venv\Scripts\activate, Linux/Mac: source ../venv/bin/activate)
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-The backend will run on `http://localhost:8000`.
 
-#### 2. Frontend
+### 4. Frontend Setup
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-The frontend will run on `http://localhost:5173`.
 
-## Testing
-1. Navigate to the frontend UI (`http://localhost:5173`).
-2. Click "Add Repository" and provide a public GitHub URL.
-3. Wait for the indexing status to change from PENDING -> CLONING -> PARSING -> EMBEDDING -> INDEXING -> COMPLETED.
-4. Click on the repository to open the Workspace.
-5. Use the Chat to ask questions about the repository, or use the Search to find specific code chunks.
+---
+
+## 🧪 Testing
+
+Run automated tests with `pytest`:
+```bash
+cd backend
+python -m pytest tests
+```
+
+Tests verify:
+* GitHub URL parsing & domain validation
+* File filtering (.git, node_modules, binaries)
+* Tree-sitter AST parsing & chunking
+* Semantic vector retrieval & reranker boosting
+* Prompt injection protection in system instructions
+* FastAPI REST endpoints
+
+---
+
+## 📡 API Endpoints
+
+* `GET /health` — Health check
+* `GET /repositories` — List all repositories
+* `POST /repositories` — Ingest and begin background indexing of a GitHub repository
+* `GET /repositories/{id}` — Repository details & indexing status
+* `DELETE /repositories/{id}` — Delete repository, files, and vectors
+* `GET /repositories/{id}/files` — List all indexed files in the repository
+* `GET /repositories/{id}/search?q={query}` — Semantic code search
+* `POST /repositories/{id}/chat` — Ask questions about the codebase
