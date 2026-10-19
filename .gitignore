@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Environment Variables
+.env
+
+# Data and Storage
+backend/data/
+data/
+*.db
+*.sqlite3
+
+# Node / Frontend
+frontend/node_modules/
+node_modules/
+dist/
+.vite/
+
+# Logs
+*.log
